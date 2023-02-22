@@ -101,7 +101,7 @@ def plot_piechar(df,var, title=''):
     plt.show()
 plot_piechar(df,'label')
 
-#Phan phoi do dai cua cac tinh nang tweet
+# Phân phối độ dài của các tính năng tweet
 fig, ax1 = plt.subplots(figsize=(35,20))
 plt.subplots_adjust(wspace=0.25, hspace =0.25)
 
@@ -117,38 +117,44 @@ for p in ax1.patches:
         ha = 'center', va = 'center',xytext = (0, 10), \
         weight = "bold", fontsize= 30, \
         textcoords = 'offser points')
-# Phan loai chieu dai cua tweet
+    
+# Phân loại chiều dài của tweet
 df['len_tweet'] = df.tweet.str.len()
 labels = ['0-50' , '50-75' , '75-100' , '100-125' , '125-150' ,'150-500']
 df['len_tweet'] = pd.cut(df['len_tweet'], \
     [0, 50, 75, 100, 125, 150, 500], labels=labels)
 plot_piechar(df,'len_tweet')
-# plot distributions of length of tweet with no raccit/sexist tweets in dataset in pie chart and bar plot
+
+# biểu đồ phân phối độ dài của tweet không có tweet phân biệt chủng tộc/phân biệt giới tính
+# trong tập dữ liệu ở biểu đồ hình tròn và biểu đồ thanh
 plot_piechar(df[df.label==1], "len_tweet", \
     "with racits/sexist tweets")
-# Puts label inside stacked bar
+
+# Đặt nhãn bên trong thanh xếp chồng lên nhau
 def put_label_stacked_bar(ax, fontsize):
-    # patches is everything inside of the char
+    
+    #  Vá lỗi là mọi thứ bên trong 'char'
     for rect in ax.patches:
-        # Find where everything is located
+        
+        # Tìm và xác định vị trí của mọi thứ
         height = rect.get_height()
         width = rect.get_width()
         x = rect.get_x()
         y = rect.get_y()
         
-        # The height of the bar is the data value and can be used as the label
+        # Chiều cao của thanh là giá trị dữ liệu và có thể được sử dụng làm nhãn
         label_text = f'{height:.0f}'
         
         # ax.text(x, y, text)
         label_x = x + width / 2
         label_y = y + height / 2
         
-        #plot only when height is greater than specified value
+        # Vẽ duy nhất một đồ thị khi chiều cao lớn hơn giá trị đã chỉ định
         if height > 0:
             ax.text(label_x, label_y, label_text, \
             ha = 'center', va = 'center', \
             weight = "bold", fontsize = fontsize)
-#Plot one variable against another variable
+# Vẽ đồ thị một biến so với một biến khác
 def dist_one_vs_another_plot(df, cat1,cat2, title=""):
     fig = plt.figue(figsize=(18,12))
     cmap = plt.cm.Blues 
@@ -164,38 +170,38 @@ def dist_one_vs_another_plot(df, cat1,cat2, title=""):
     ax1.set_xlabel(cat1, fontsize=20)
     put_label_stacked_bar(ax1,17)
     plt.show()
-#Plots the distribution of length of tweet against label in stacked bar plot
+# Vẽ biểu đồ phân phối độ dài của tweet theo nhãn trong biểu đồ thanh xếp chồng lên nhau
 dist_one_vs_another_plot(df,'len_tweet', 'label')
 
 ################################# TEXT PROCESSING #############################
 racist = df[df['label']==1].tweet 
 
-#Plots world cloud of racist/sexist tweets
+# Vẽ đồ thị đám mây cho phân biệt chủng tộc/phân biệt giới tính trên thế giới
 plt.figue(figsize=(24,20))
 world_cloud_racist=WordCloud(min_font_size=3, max_words=3200,width=1600,height =720).generate("".join(racist))
 plt.imshow(world_cloud_racist, interpolation='bilinear')
 plt.grid(False)
 
-#Removes stop words
+# Xóa các từ dừng
 def remove_stopwords(text):
     text = ''.join([word for word in text.split() if word not in (stopwords.words('english'))])
     return text
-#Removes url
+# xóa các url
 def remove_url(text):
     url = re.compile(r'http?://\S+|www\. \S+')
     return url.sub(r'', text)
-#Remove punct
+# Xóa dấu câu
 def remove_punct(text):
     table = str.maketrans('','', string.punctuation)
     return text.traslate(table)
-#Remove html
+# Xóa link html
 def remove_html(text):
     html=re.compile(r'<.*?>')
     return html.sub(r',text')
-#Remove  @username
+# Xóa  @username(tên người dùng)
 def remove_username(text):
     return re.sub('@[^\s]+','',text)
-#Remove emojis
+# Xóa emojis(biểu tượng cảm xúc)
 def remove_emoji(text):
     emoji_pattern = re.compile("["
                     u"\U0001F600-\U0001F64F" # emoticons
@@ -206,7 +212,7 @@ def remove_emoji(text):
                     u"\U000024C2-\U0001F251"
                     "]+", flags = re.UNICODE)
     return emoji_pattern.sub(r'', text)
-#Decontraction text
+# Rút gọn văn bản
 def decontraction(text):
     text = re.sub(r"won\'t", "will not", text)
     text = re.sub(r"won\'t've", "will not have", text)
@@ -231,7 +237,7 @@ def decontraction(text):
     text = re.sub(r"\'ve", "have", text)
     text = re.sub(r"\'m", "am", text)
     return text
-#Seperates alphanumeric
+# Phân tách chữ và số
 def seperate_alphanumeric(text):
     words = text
     words = re.findall(r"[^\W\d_]+|\d+", words)
@@ -249,7 +255,7 @@ def char(text):
 df['final_tweet'] = df['tweet'].copy(deep=True)
 
 def clean_tweet(df):
-#Applies function on Text
+# Áp dụng chức năng trên Văn bản
     df['final_tweet'] = df['final_tweet'].apply(lambda x : remove_username(x))
     df['final_tweet'] = df['final_tweet'].apply(lambda x : remove_url(x))
     df['final_tweet'] = df['final_tweet'].apply(lambda x : remove_emoji(x))
@@ -260,10 +266,10 @@ def clean_tweet(df):
     df['final_tweet'] = df['final_tweet'].apply(lambda x : x.lower())
     df['final_tweet'] = df['final_tweet'].apply(lambda x : remove_stopwords(x))
     
-#Clean tweets
+# Làm sạch các tweet
 clean_tweet(df)
 
-#Print result
+# In kết quả
 print(df['final_tweet'])
 print(df['tweet'])
 
@@ -271,23 +277,24 @@ unique_chars = pd.Series([char for sentence in df["final_tweet"] for char in sen
 print("Number of unique chars:", len(unique_chars))
 print(unique_chars)
 
-#Saves final tweet
+# Save final tweet
 joblib.dump(df['final_tweet'], 'final_tweet.pkl')
 ################################ MACHINE LEARNING ####################################
-#Extract output and input variables
+
+# Trích xuất các biến đầu ra và đầu vào
 if path.isfile('final_tweet.pkl'):
-    #Load final text
+    # Load final text
     X = joblib.load('final_tweet.pkl')
 else:
     clean_tweet(df)
 
-    #Save final text 
+    # Save final text 
     joblib.dump(df['final_tweet'], 'final_tweet.pkl')
     
     X = df['final_tweet']
 y = df["label"]
 
-#Save X and y
+# Save X and y
 joblib.dump(X, 'X.pkl')
 joblib.dump(y, 'y.pkl')
 
@@ -298,18 +305,18 @@ X=X[0:5000]
 y=y[0:5000]
 ''' 
 def apply_tfidfvectorizer(X, y):
-    #Applies TFIDF
+    # Áp dụng TFIDF
     tfidf = TfidfVectorizer()
     Xtfidf_final = tfidf.fit_transform(X)
     print(Xtfidf_final.shape)
 
-    #Resamples data using SMOTE
+    # Lấy mẫu lại dữ liệu bằng SMOTE
     sm = SMOTE(random_state=42)
     Xtfidf_sm, ytfidf_sm = sm.fit_resample(Xtfidf_final, y)
     print( Xtfidf_sm.shape) 
     print( ytfidf_sm.shape) 
     
-    #Splits the data to get TFIDF training and testing
+    # Chia nhỏ dữ liệu để được đào tạo và kiểm tra TFIDF
     Xtfidf_train, Xtfidf_test, ytfidf_train, ytfidf_test = train_test_split(Xtfidf_sm,
     ytfidf_sm, shuffle=True, test_size = 0.2, random_state = 2023, stratify = ytfidf_sm)
     Xtfidf_train = Xtfidf_train.astype('float32')
@@ -317,22 +324,22 @@ def apply_tfidfvectorizer(X, y):
     ytfidf_train = ytfidf_train.astype('float32')
     ytfidf_test = ytfidf_test.astype('float32')
     
-    #Saves into pkl files
+    # Lưu vào tệp pkl
     joblib.dump(Xtfidf_train, 'Xtfidf_train.pkl')
     joblib.dump(Xtfidf_test, 'Xtfidf_test.pkl')
     joblib.dump(ytfidf_train, 'ytfidf_train.pkl')
     joblib.dump(ytfidf_test, 'ytfidf_test.pkl')
 def apply_countvectorizer(X,y):
-    #Applies Count Vectorizer
+    # Áp dụng Count Vectorizer
     countVect = CountVectorizer()
     XCV_final = countVect.fit_transform(X)
     
-    #Resamples data using SMOTE
+    # Lấy mẫu lại dữ liệu bằng SMOTE
     sm = SMOTE(random_state=42)
     XCV_sm, yCV_sm = sm.fit_resample(XCV_final, y)
     print(XCV_final.shape)
     
-    #Splits the data to get Count Vectorizer training and testing
+    # Chia nhỏ dữ liệu để đào tạo và thử nghiệm bằng Count Vectorizer
     XCV_train, XCV_test, yCV_train, yCV_test = train_test_split(XCV_sm, yCV_sm, test_size=
  0.2, shuffle=True, random_state = 2023, stratify=yCV_sm)
     XCV_train = XCV_train.astype('float32')
@@ -340,22 +347,23 @@ def apply_countvectorizer(X,y):
     yCV_train = yCV_train.astype('float32')
     yCV_test = yCV_test.astype('float32')
     
-    #Saves into pkl files
+    # Lưu vào tệp pkl
     joblib.dump(XCV_train, 'XCV_train.pkl')
     joblib.dump(XCV_test, 'XCV_test.pkl')
     joblib.dump(yCV_train, 'yCV_train.pkl')
     joblib.dump(yCV_test, 'yCV_test.pkl')
 def apply_hashingvectorizer(X,y):
-    #Applies Hasing Vectorizer
+    
+    # Áp dụng đếm Vectorizer
     hashVect = HashingVectorizer()
     XHV_final = hashVect.fit_transform(X)
     
-    #Resamples data using SMOTE
+    # Lấy mẫu lại dữ liệu bằng SMOTE
     sm = SMOTE(random_state=42)
     XHV_sm, yHV_sm = sm.fit_resample(XHV_final, y)
     print(XHV_final.shape) 
     
-    #Splits the data to get Count Vectorizer training and testing
+    # Chia dữ liệu để đào tạo và thử nghiệm Count Vectorizer
     XHV_train, XHV_test, yHV_train, yHV_test = train_test_split(XHV_sm, yHV_sm, test_size=
  0.2, shuffle=True, random_state = 2023, stratify=yHV_sm)
     XHV_train = XHV_train.astype('float32')
@@ -363,7 +371,7 @@ def apply_hashingvectorizer(X,y):
     yHV_train = yHV_train.astype('float32')
     yHV_test = yHV_test.astype('float32')
     
-    #Saves into pkl files
+    # Lưu vào tệp pkl 
     joblib.dump(XHV_train, 'XHV_train.pkl')
     joblib.dump(XHV_test, 'XHV_test.pkl')
     joblib.dump(yHV_train, 'yHV_train.pkl')
@@ -420,7 +428,8 @@ train_sizes=np.linspace(.1, 1.0, 5)):
     test_scores_std = np.std(test_scores, axis=1) 
     fit_times_mean = np.mean(fit_times, axis=1)
     fit_times_std = np.std(fit_times, axis=1)
-    #Plot learning curve
+    
+    # Đồ thị đường cong học tập
     axes[0].grid()
     axes[0].fill_between(train_sizes, \
         train_scores_mean - train_scores_std,\
@@ -436,7 +445,8 @@ train_sizes=np.linspace(.1, 1.0, 5)):
     axes[0].plot(train_sizes, test_scores_mean, 'o-', \
         color="g", label="Cross-validation score")
     axes[0].legend(loc="best")
-    #Plot n_sample vs fit_times
+    
+    # Đồ thị n_sample so với fit_times
     axes[1].grid()
     axes[1].plot(train_sizes, fit_times_mean, 'o-')
     axes[1].fill_between(train_sizes, \
@@ -446,7 +456,7 @@ train_sizes=np.linspace(.1, 1.0, 5)):
     axes[1].set_ylabel("Score")
     axes[1].set_title("Scalability of the model")
     
-    #Plot fit_time vs core
+    # Đồ thị fit_time so với core
     axes[2].grid()
     axes[2].plot(test_scores_mean, fit_times_mean, 'o-')
     axes[2].fill_between(fit_times_mean, \
@@ -609,17 +619,20 @@ max_len = 1000
 
 def tokenize_pad_sequences(text):
     '''
-    This function tokenize the input text into sequences of intergers and then 
-    pad each sequence to the same length
+    Hàm này mã hóa văn bản đầu vào thành các chuỗi xen kẽ và sau đó
+    đệm từng chuỗi có cùng độ dài
     '''
-    #Text tokenization
+    # Mã thông báo dạng văn bản
     tokenizer = Tokenizer(num_words=max_words, lower=True, split='')
     tokenizer.fit_on_texts(text)
-    #Transforms text to a sequence of intergers
+    
+    # Chuyển đổi văn bản thành một chuỗi kí tự trung gian
     X = tokenizer.texts_to_sequences(text)
-    #Pad senquences to the same length
+    
+    # Các chuỗi Pad có cùng độ dài
     X = pad_sequences(X, padding='post', maxlen=max_len)
-    #return sequences
+    
+    # Trả về tuần tự (trình tự)
     return X, tokenizer
 
 print('Before Tokenization & Padding \n', df['final_tweet'][0], '\n')
@@ -659,10 +672,11 @@ history = model.fit(X_train, y_train,
                     validation_data=(X_valid, y_valid),
                     batch_size=batch_size, epochs=epochs, verbose=1,
                     callbacks = [es])
-#Evaluates model on the test set
+
+# Đánh giá mô hình trên tập kiểm tra
 loss, accuracy = model.evaluate(X_test, y_test, verbose=0)
 
-#Prints metrics
+# Chỉ số bản in
 print('Accuracy : {:.4f}'.format(accuracy))
 
 plt.figure(figsize=(15,5))
@@ -679,11 +693,11 @@ plt.xlabel('Epochs')
 plt.legend()
 plt.show()
 
-#Plots confusion matrix
+# Đồ thị của ma trận nhầm lẫn
 y_pred = model.predict(X_test)
 plot_cm(np.argmax(np.array(y_test), axis=1), np.argmax(y_pred, axis=1),'LSTM')
 
-#Plots predicted values versus true values diagram
+# Đổ thị sơ đồ giá trị dự đoán so với sơ đồ giá trị thực
 plot_real_pred_val(np.argmax(np.array(y_test), axis=1), np.argmax(y_pred, axis=1),'LSTM')
 
 ########################### CNN ###############################################
@@ -723,10 +737,10 @@ history = model.fit(
     epochs=20,
     validation_data=(X_valid, y_valid), callbacks =[es]
     )
-#Evaluates model on the test set
+# Đánh giá mô hình dựa trên tập kiểm tra
 loss, accuracy = model.evaluate(X_test, y_test, verbose=0)
 
-#Prints metrics
+# Chỉ số bản in
 print('Accuracy   : {:.4f}'.format(accuracy))
 
 plt.figure(figsize=(15,5))
@@ -743,11 +757,11 @@ plt.xlabel('Epochs')
 plt.legend()
 plt.show()
 
-#Plots confusion matrix
+# Đồ thị của ma trận nhầm lẫn
 y_pred = model.predict(X_test)
 plot_cm(np.argmax(np.array(y_test), axis=1), np.argmax(y_pred, axis=1),'CNN')
 
-#Plots predicted values versus true values diagram
+# Đồ thị sơ đồ giá trị dự đoán so với sơ đồ giá trị thực
 plot_real_pred_val(np.argmax(np.array(y_test), axis=1), np.argmax(y_pred, axis=1),'CNN')
 
 
