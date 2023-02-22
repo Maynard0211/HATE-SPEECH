@@ -48,37 +48,38 @@ from catboost import CatBoostClassifier
 from lightgbm import LGBMClassifier
 from imblearn.over_sampling import SMOTE 
 from sklearn.model_selection import learning_curve
-from mlxtend.plotting import plot_decision_regions 
-#Doc tap du lieu
+from mlxtend.plotting import plot_decision_regions
+ 
+# Đọc tập dữ liệu
 curr_path = os.getcwd()
 df = pd.read_csv(curr_path +"/train.csv")
 
-#kiem tra ban in
+# Kiểm tra bản in
 print(df.shape)
 
-#Doc cot
+# Đọc cột
 print("Data Columns -->".list(df.columns))
 
-#Trich xuat tweer and label
+# Trích xuất tweet và label
 tweet = df['tweet'].tolist()
 label = df['label'].tolist()
 
-#In moy so vi du ve tweet va lable 
+# In một số ví dụ về tweet và label
 print("Tweet:")
 for i in range(5):
     print("{} --- {}".format(tweet[i],label[i]))
 
-#Kiem tra gi tri null
+# Kiểm tra giá trị null
 print(df.isnull().sum())
 print('Total number of null values: ', df.isnull().sum().sum())
 
-#Drop cot "id"
+# Xóa cột "id"
 df = df.drop("id", axit = 1)
 
-#Kiem tra thong tin tep du lieu
+# Kiểm tra thông tin tệp dữ liệu
 print(df.info())
 
-#Dinh nghia chuc nang tao bieu do tron va bieu do thanh voi subpots
+# Định nghĩa chức năng tạo biểu đồ tròn và biểu đồ thanh với subpots
 def plot_piechar(df,var, title=''):
     plt.figure(figsize=(25,10))
     plt.subplot(121)
@@ -154,6 +155,7 @@ def put_label_stacked_bar(ax, fontsize):
             ax.text(label_x, label_y, label_text, \
             ha = 'center', va = 'center', \
             weight = "bold", fontsize = fontsize)
+            
 # Vẽ đồ thị một biến so với một biến khác
 def dist_one_vs_another_plot(df, cat1,cat2, title=""):
     fig = plt.figue(figsize=(18,12))
@@ -170,6 +172,7 @@ def dist_one_vs_another_plot(df, cat1,cat2, title=""):
     ax1.set_xlabel(cat1, fontsize=20)
     put_label_stacked_bar(ax1,17)
     plt.show()
+    
 # Vẽ biểu đồ phân phối độ dài của tweet theo nhãn trong biểu đồ thanh xếp chồng lên nhau
 dist_one_vs_another_plot(df,'len_tweet', 'label')
 
@@ -186,21 +189,26 @@ plt.grid(False)
 def remove_stopwords(text):
     text = ''.join([word for word in text.split() if word not in (stopwords.words('english'))])
     return text
+
 # xóa các url
 def remove_url(text):
     url = re.compile(r'http?://\S+|www\. \S+')
     return url.sub(r'', text)
+
 # Xóa dấu câu
 def remove_punct(text):
     table = str.maketrans('','', string.punctuation)
     return text.traslate(table)
+
 # Xóa link html
 def remove_html(text):
     html=re.compile(r'<.*?>')
     return html.sub(r',text')
+
 # Xóa  @username(tên người dùng)
 def remove_username(text):
     return re.sub('@[^\s]+','',text)
+
 # Xóa emojis(biểu tượng cảm xúc)
 def remove_emoji(text):
     emoji_pattern = re.compile("["
@@ -212,6 +220,7 @@ def remove_emoji(text):
                     u"\U000024C2-\U0001F251"
                     "]+", flags = re.UNICODE)
     return emoji_pattern.sub(r'', text)
+
 # Rút gọn văn bản
 def decontraction(text):
     text = re.sub(r"won\'t", "will not", text)
@@ -237,6 +246,7 @@ def decontraction(text):
     text = re.sub(r"\'ve", "have", text)
     text = re.sub(r"\'m", "am", text)
     return text
+
 # Phân tách chữ và số
 def seperate_alphanumeric(text):
     words = text
@@ -255,6 +265,7 @@ def char(text):
 df['final_tweet'] = df['tweet'].copy(deep=True)
 
 def clean_tweet(df):
+    
 # Áp dụng chức năng trên Văn bản
     df['final_tweet'] = df['final_tweet'].apply(lambda x : remove_username(x))
     df['final_tweet'] = df['final_tweet'].apply(lambda x : remove_url(x))
@@ -279,10 +290,12 @@ print(unique_chars)
 
 # Save final tweet
 joblib.dump(df['final_tweet'], 'final_tweet.pkl')
+
 ################################ MACHINE LEARNING ####################################
 
 # Trích xuất các biến đầu ra và đầu vào
 if path.isfile('final_tweet.pkl'):
+    
     # Load final text
     X = joblib.load('final_tweet.pkl')
 else:
@@ -305,6 +318,7 @@ X=X[0:5000]
 y=y[0:5000]
 ''' 
 def apply_tfidfvectorizer(X, y):
+    
     # Áp dụng TFIDF
     tfidf = TfidfVectorizer()
     Xtfidf_final = tfidf.fit_transform(X)
@@ -330,6 +344,7 @@ def apply_tfidfvectorizer(X, y):
     joblib.dump(ytfidf_train, 'ytfidf_train.pkl')
     joblib.dump(ytfidf_test, 'ytfidf_test.pkl')
 def apply_countvectorizer(X,y):
+    
     # Áp dụng Count Vectorizer
     countVect = CountVectorizer()
     XCV_final = countVect.fit_transform(X)
@@ -456,7 +471,7 @@ train_sizes=np.linspace(.1, 1.0, 5)):
     axes[1].set_ylabel("Score")
     axes[1].set_title("Scalability of the model")
     
-    # Đồ thị fit_time so với core
+    # Đồ thị fit_time so với score
     axes[2].grid()
     axes[2].plot(test_scores_mean, fit_times_mean, 'o-')
     axes[2].fill_between(fit_times_mean, \
